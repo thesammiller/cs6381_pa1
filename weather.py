@@ -1,14 +1,14 @@
 # weather 'library'
-# formats and parses data
+# provides a common data structure for applications
 
 from random import randrange
 
 
 class Weather:
-    def __init__(self, zipcode=int(), temp=float(), humid=float()):
+    def __init__(self, zipcode=int(), temperature=float(), humidity=float()):
         self.set_zipcode(zipcode)
-        self.set_temperature(temp)
-        self.set_humidity(humid)
+        self.set_temperature(temperature)
+        self.set_humidity(humidity)
 
     def get_weather(self):
         # produce weather data

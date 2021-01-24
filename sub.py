@@ -25,6 +25,7 @@ import weather
 
 # API specifies that data will be returned as a string
 # first word is the topic
+# return Weather data structure
 def parse_weather(raw_data):
     zipcode, temp, humid = raw_data.split()
     w = weather.Weather()
@@ -35,7 +36,7 @@ def parse_weather(raw_data):
 
 
 # local application processes set number of weather updates
-# returns values in weather data structure
+# returns values in dictionary
 def average_weather(iterations, weather_update):
     total_temp = 0
     total_humid = 0
@@ -60,11 +61,11 @@ def average_weather(iterations, weather_update):
             break
 
     # calculate the averages
-    temp = total_temp / iterations
-    humid = total_humid / iterations
+    temperature = total_temp / iterations
+    humidity = total_humid / iterations
 
-    # return data in familiar data structure
-    return {"zip": zipcode, "temp": temp, "humid": humid}
+    # return data in local data structure
+    return weather.Weather(zipcode=zipcode, temperature=temperature, humidity=humidity)
 
 
 def main():
@@ -84,18 +85,21 @@ def main():
     # local function gets passed main arguments
     # pass in the update function
     # data is returned in a format which can be understood by the local application logic
-    data = average_weather(iterations, lambda: sub.notify(zipcode))
-
+    avg = average_weather(iterations, lambda: sub.notify(zipcode))
 
     print()
     print("*" * len(welcome_msg))
+
     print("Average temperature " 
                 "over {iterations} iterations " 
-                "for zipcode {zip}:\n" 
-                "\tTemperature:\t{temp:.2f}F\n" 
-                "\tHumidity:\t{humid:.2f}%."
-          .format(iterations=iterations, **data))
+                "for zipcode {zipcode}:\n" 
+                "\tTemperature:\t{temperature:.2f}F\n" 
+                "\tHumidity:\t{humidity:.2f}%."
+          .format(iterations=iterations, zipcode=zipcode,
+                  temperature=avg.temperature, humidity=avg.humidity))
+
     print("*" * len(welcome_msg))
+    print()
 
 if __name__ == '__main__':
     main()
