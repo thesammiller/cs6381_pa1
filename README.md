@@ -3,7 +3,7 @@
 Writing aaplication and middleware for 0MQ.
 
 To use:
-git clone https://github.com/thesammiller/cs6381_pa1.git
+git clone https://github.com/thesammiller/cs6381_pa1.git  
 python3 pub.py
 
 in a new terminal: 
