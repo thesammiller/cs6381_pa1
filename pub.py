@@ -16,33 +16,51 @@
 #   Publishes random weather updates
 #
 
-import zmq
-from random import randrange
 from pubsub import publisher
 import weather
+
+# port for API
+USE_PORT = 5556
+
+
+# helper function to create weather
+# returns topic and data strings
+def get_weather():
+    w = weather.Weather()
+    w.get_random_weather()
+
+    # will use zipcode as topic
+    # Weather stores zipcode as int
+    # API specifies topic as string
+    zipcode = str(w.zipcode)
+
+    # weather data temperature and humidity are floats
+    # API specifies data as string
+    weather_data = format_data(w)
+
+    # return string zipcode as topic
+    # return string floats as data
+    return zipcode, weather_data
 
 
 # Format Weather class data
 # API requires publishing data as string
 def format_data(w):
-    return "{temp} {humid}".format(temp=w.temperature, humid=w.humidity)
+    return "{temperature} {humidity}".format(temperature=w.temperature, humidity=w.humidity)
 
 
-# local application gets weather data
-# then formats data for publishing
-
+# gets weather data
+# publishes weather data
 if __name__ == '__main__':
-    # publisher created with port
-    pub = publisher.NoBrokerPublisher(port=5556)
-    w = weather.Weather()
+    # publisher created with specified port
+    pub = publisher.NoBrokerPublisher(port=USE_PORT)
+
     # publish data from local application function that formats data
     # uses a lambda so that get_weather() is called every cycle
     while True:
-        w.get_weather()
-        # application logic decision to use zipcode as topic
-        # Weather stores it as number, retrieve it as string
-        topic = str(w.zipcode)
-        # format data into publisher string
-        data = format_data(w)
+        # create topic and data
+        topic, data = get_weather()
+
+        # api requires string topic and string data
         pub.publish(topic, data)
 

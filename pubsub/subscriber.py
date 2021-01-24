@@ -22,7 +22,7 @@ import zmq
 
 class NoBrokerSubscriber:
 
-    def __init__(self, srv_addr="localhost", port=5556, topic="10001"):
+    def __init__(self, srv_addr="localhost", port=5556):
         #  Socket to talk to server
         self.context = zmq.Context()
 
@@ -36,6 +36,7 @@ class NoBrokerSubscriber:
 
         self.connect_str = "tcp://{addr}:{port}".format(addr=self.srv_addr, port=self.port)
 
+    # pass in a topic string --> return an update string
     def notify(self, topic):
         self.socket.connect(self.connect_str)
         # Python 2 - ascii bytes to unicode str

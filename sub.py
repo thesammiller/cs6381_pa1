@@ -16,23 +16,19 @@
 #   Collects weather updates and finds avg temp in zipcode
 #
 
-#data structure for weather information
-#dictionary with keys 'zip', 'temp', 'humid'
-
 from pubsub import subscriber
 import weather
+
+
+USE_PORT = 5556
 
 
 # API specifies that data will be returned as a string
 # first word is the topic
 # return Weather data structure
 def parse_weather(raw_data):
-    zipcode, temp, humid = raw_data.split()
-    w = weather.Weather()
-    w.set_zipcode(zipcode)
-    w.set_temperature(temp)
-    w.set_humidity(humid)
-    return w
+    zipcode, temperature, humidity = raw_data.split()
+    return weather.Weather(zipcode=zipcode, temperature=temperature, humidity=humidity)
 
 
 # local application processes set number of weather updates
@@ -45,9 +41,9 @@ def average_weather(iterations, weather_update):
 
     for i in range(iterations):
         print("Getting update #{}...".format(i+1))
-        # get data in local format
-        raw_data = weather_update()
-        w = parse_weather(raw_data)
+
+        # function we pass in as argument will return an updated Weather object
+        w = weather_update()
 
         # process the data as needed
         total_temp += w.temperature
@@ -61,45 +57,49 @@ def average_weather(iterations, weather_update):
             break
 
     # calculate the averages
-    temperature = total_temp / iterations
-    humidity = total_humid / iterations
+    avg_temperature = total_temp / iterations
+    avg_humidity = total_humid / iterations
 
     # return data in local data structure
-    return weather.Weather(zipcode=zipcode, temperature=temperature, humidity=humidity)
+    return weather.Weather(zipcode=zipcode, temperature=avg_temperature, humidity=avg_humidity)
 
 
 def main():
+
+    #User Input
     welcome_msg = "Welcome to the Vanderbilt Random Weather Data Service."
     print("*" * len(welcome_msg))
     print(welcome_msg)
     print("*" * len(welcome_msg))
+
     # determine data of interest
     zipcode = input("What zipcode? > ")
 
     # create subscriber with interest as topic
-    sub = subscriber.NoBrokerSubscriber(topic=zipcode)
+    sub = subscriber.NoBrokerSubscriber(port=USE_PORT)
 
     # variable for local application function
     iterations = int(input("How many iterations? > "))
 
-    # local function gets passed main arguments
-    # pass in the update function
+    # weather logic
+    # pass in the update function - lambda so that parameter can be passed to sub notify each time
     # data is returned in a format which can be understood by the local application logic
-    avg = average_weather(iterations, lambda: sub.notify(zipcode))
+    avg = average_weather(iterations, lambda: parse_weather(sub.notify(zipcode)))
 
     print()
     print("*" * len(welcome_msg))
 
     print("Average temperature " 
-                "over {iterations} iterations " 
-                "for zipcode {zipcode}:\n" 
-                "\tTemperature:\t{temperature:.2f}F\n" 
-                "\tHumidity:\t{humidity:.2f}%."
+            "over {iterations} iterations " 
+            "for zipcode {zipcode}:\n" 
+            "\tTemperature:\t{temperature:.2f}F\n" 
+            "\tHumidity:\t{humidity:.2f}%."
           .format(iterations=iterations, zipcode=zipcode,
                   temperature=avg.temperature, humidity=avg.humidity))
 
     print("*" * len(welcome_msg))
     print()
+
 
 if __name__ == '__main__':
     main()

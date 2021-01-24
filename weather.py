@@ -10,7 +10,7 @@ class Weather:
         self.set_temperature(temperature)
         self.set_humidity(humidity)
 
-    def get_weather(self):
+    def get_random_weather(self):
         # produce weather data
         self.set_zipcode(randrange(1, 100000))
         self.set_temperature(randrange(-80, 135))
