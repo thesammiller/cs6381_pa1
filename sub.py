@@ -18,9 +18,11 @@
 
 from pubsub import subscriber
 import weather
+import sys
 
-
-USE_PORT = 5556
+localhost = '127.0.0.1'
+use_port = 5556
+use_ip = localhost
 
 
 # API specifies that data will be returned as a string
@@ -65,6 +67,20 @@ def average_weather(iterations, weather_update):
 
 
 def main():
+
+    if len(sys.argv) > 1:
+        print(sys.argv)
+        args = sys.argv[::]
+        args.pop(0)
+        while len(args) > 0:
+            if ("-i" in sys.argv):
+                use_ip = args.pop(sys.argv.index("-i"))
+                args.pop(sys.argv.index("-i") - 1)
+                print(use_ip)
+                continue
+            if ("-p" in sys.argv):
+                use_port = args.pop(sys.argv.index("-p"))
+                args.pop(sys.argv.index("-p")-1)
 
     #User Input
     welcome_msg = "Welcome to the Vanderbilt Random Weather Data Service."
