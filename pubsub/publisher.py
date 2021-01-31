@@ -24,6 +24,7 @@ class NoBrokerPublisher:
     def __init__(self, port=None):
         print("Current libzmq version is %s" % zmq.zmq_version())
         print("Current  pyzmq version is %s" % zmq.__version__)
+        
         if port is None:
             self.port = 5556
         else:

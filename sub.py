@@ -73,12 +73,12 @@ def main():
         args = sys.argv[::]
         args.pop(0)
         while len(args) > 0:
-            if ("-i" in sys.argv):
+            if "-i" in sys.argv:
                 use_ip = args.pop(sys.argv.index("-i"))
                 args.pop(sys.argv.index("-i") - 1)
                 print(use_ip)
                 continue
-            if ("-p" in sys.argv):
+            if "-p" in sys.argv:
                 use_port = args.pop(sys.argv.index("-p"))
                 args.pop(sys.argv.index("-p")-1)
 
