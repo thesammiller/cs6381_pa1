@@ -16,8 +16,12 @@
 #   Publishes random weather updates
 #
 
-from pubsub import publisher
+import sys
+import time
+
+from pubsub import floodpublisher, brokerpublisher
 import weather
+
 
 # port for API
 USE_PORT = 5556
@@ -53,7 +57,16 @@ def format_data(w):
 # publishes weather data
 if __name__ == '__main__':
     # publisher created with specified port
-    pub = publisher.FloodPublisher()
+    if len(sys.argv) > 1:
+        if (sys.argv[1]) == 'flood':
+            print("Using Flood Publisher.")
+            pub = floodpublisher.FloodPublisher()
+        if (sys.argv[1]) == 'broker':
+            print("Using Broker Publisher.")
+            pub = brokerpublisher.BrokerPublisher()
+    if (len(sys.argv) < 2):
+        print("Using default type flood. Pass 'broker' for broker.")
+        pub = floodpublisher.FloodPublisher()
 
     # publish data from local application function that formats data
     # uses a lambda so that get_weather() is called every cycle
@@ -63,4 +76,5 @@ if __name__ == '__main__':
 
         # api requires string topic and string data
         pub.publish(topic, data)
+
 

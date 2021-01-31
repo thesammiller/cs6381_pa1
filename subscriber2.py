@@ -43,5 +43,4 @@ while True:
     #  Wait for next request from client
     message = socket.recv_string()
     print("Received request: %s" % message)
-    time.sleep(1)
     socket.send_string(message)

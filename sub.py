@@ -16,7 +16,7 @@
 #   Collects weather updates and finds avg temp in zipcode
 #
 
-from pubsub import subscriber
+from pubsub import floodsubscriber
 import weather
 import sys
 
@@ -92,7 +92,7 @@ def main():
     zipcode = '30319' #input("What zipcode? > ")
 
     # create subscriber with interest as topic
-    sub = subscriber.FloodSubscriber()
+    sub = floodsubscriber.FloodSubscriber()
 
     # variable for local application function
     iterations = 3 #int(input("How many iterations? > "))

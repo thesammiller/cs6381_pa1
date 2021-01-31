@@ -67,12 +67,3 @@ class BrokerPublisher:
             self.socket.connect(SERVER_ENDPOINT)
             self.socket.send_string(message)
 
-def main():
-    publisher = BrokerPublisher()
-    for i in range(10):
-        print("Sending " + str(i))
-        message = "Message" + str(i)
-        publisher.publish(str(i), message)
-
-if __name__ == '__main__':
-    main()

@@ -9,15 +9,14 @@ import threading
 
 REQUEST_TIMEOUT = 5000
 REQUEST_RETRIES = 3
-SUBSCRIBER_ENDPOINT = "tcp://localhost:5556"
-
-sockpool = []
+ENDPOINT_FORMAT = "tcp://{ipaddr}:5556"
 
 class Broker:
     def __init__(self):
         self.context = zmq.Context ()   # returns a singleton object
         self.incoming_socket = self.context.socket (zmq.REP)
-        self.incoming_socket.bind ("tcp://*:5555")
+        self.incoming_socket.bind ("tcp://*:5555}")
+        self.subscribers = {"90210": 'localhost'}
 
     #Application interface --> run() encloses basic functionality
     def run(self):
@@ -27,21 +26,25 @@ class Broker:
         while True:
             #  Wait for next request from client
             self.message = self.incoming_socket.recv_string()
-            print("Received request: %s" % self.message)
+            topic, *data = self.message.split()
+            #print("Received request: Topic -> {topic}\t\tData -> {data}".format(topic=topic, data=data))
+            self.notify_subscribers(topic, data)
+            self.incoming_socket.send_string(self.message)
 
-            self.notify_subscriber()
+    def notify_subscribers(self, topic, data):
+        if topic in self.subscribers:
+            print("Notifying subscriber for topic {}".format(topic))
+            self.notify_subscriber(topic, data)
 
-    def notify_subscriber(self):
+    def notify_subscriber(self, topic, data):
             kwargs = dict()
-            kwargs['message'] = self.message
+            kwargs['message'] = "{topic} {data}".format(topic=topic, data=' '.join(data))
             kwargs['attempts'] = 3
-            kwargs['subscriber_endpoint'] = SUBSCRIBER_ENDPOINT
+            kwargs['subscriber_endpoint'] = ENDPOINT_FORMAT.format(ipaddr=self.subscribers[topic])
             kwargs['request_timeout'] = REQUEST_TIMEOUT
             kwargs['request_retries'] = REQUEST_RETRIES
             thread = threading.Thread(target=self.lazypirate, kwargs=kwargs)
             thread.start()
-            self.incoming_socket.send_string(self.message)
-            #time.sleep(1)
 
     def lazypirate(self, subscriber_endpoint=None, message=None,
                             attempts=None, request_timeout=None, request_retries=None):
