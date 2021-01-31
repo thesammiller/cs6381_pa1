@@ -21,7 +21,7 @@ import weather
 import sys
 
 localhost = '127.0.0.1'
-use_port = 5556
+USE_PORT=5556
 use_ip = localhost
 
 
