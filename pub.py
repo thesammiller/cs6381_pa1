@@ -53,7 +53,7 @@ def format_data(w):
 # publishes weather data
 if __name__ == '__main__':
     # publisher created with specified port
-    pub = publisher.NoBrokerPublisher(port=USE_PORT)
+    pub = publisher.FloodPublisher()
 
     # publish data from local application function that formats data
     # uses a lambda so that get_weather() is called every cycle

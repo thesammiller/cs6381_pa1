@@ -20,9 +20,9 @@
 import zmq
 
 
-class NoBrokerSubscriber:
+class FloodSubscriber:
 
-    def __init__(self, srv_addr="localhost", port=5556):
+    def __init__(self):
         #  Socket to talk to server
         self.context = zmq.Context()
 
@@ -31,8 +31,8 @@ class NoBrokerSubscriber:
 
         # Here we assume publisher runs locally unless we
         # send a command line arg like 10.0.0.1
-        self.srv_addr = srv_addr
-        self.port = port
+        self.srv_addr = '127.0.0.1'
+        self.port = '5556'
 
         self.connect_str = "tcp://{addr}:{port}".format(addr=self.srv_addr, port=self.port)
 

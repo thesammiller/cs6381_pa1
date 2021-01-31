@@ -25,44 +25,54 @@ REQUEST_TIMEOUT = 5000
 REQUEST_RETRIES = 3
 SERVER_ENDPOINT = "tcp://localhost:5555"
 
-context = zmq.Context()
+class BrokerPublisher:
 
-print ("Publisher...")
-socket = context.socket(zmq.REQ)
+    def __init__(self):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.REQ)
+        self.request_retries = REQUEST_RETRIES
+        self.srv_addr = "localhost"
+        self.connect_str = "tcp://" + self.srv_addr + ":5555"
+        self.socket.connect(self.connect_str)
 
-# Here we assume a server runs locally unless we
-# send a command line arg like 10.0.0.2
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-connect_str = "tcp://" + srv_addr + ":5555"
-socket.connect(connect_str)
+    def publish(self, topic, data):
+            self.message = "{topic} {data}".format(topic=topic, data=data)
+            self.publish_lazy(self.message)
 
-for i in range(10):
-    print("Sending " + str(i))
-    message = "Message" + str(i)
-    socket.send_string(message)
-    
-    #lazy pirate to avoid port issues
-    retries_left = REQUEST_RETRIES
-    while True:
-        #print("Socket poll and zmq pollin")
-        if (socket.poll(REQUEST_TIMEOUT) & zmq.POLLIN) != 0:
-            print("Getting reply...")
-            reply = socket.recv_string()
-            if reply == message:
-                print("Server replied ok")
-                break
-            else:
-                print("Polling error")
-                continue
+    # lazy pirate to avoid port issues
+    def publish_lazy(self, message):
+        self.socket.send_string(message)
+        self.retries_left = self.request_retries
+        while True:
+            #print("Socket poll and zmq pollin")
+            if (self.socket.poll(REQUEST_TIMEOUT) & zmq.POLLIN) != 0:
+                print("Getting reply...")
+                reply = self.socket.recv_string()
+                if reply == self.message:
+                    print("Server replied ok")
+                    break
+                else:
+                    print("Polling error")
+                    continue
 
-        retries_left -= 1
-        print("No response from server")
-        socket.setsockopt(zmq.LINGER, 0)
-        socket.close()
-        if retries_left == 0:
-            print("Exiting")
-            sys.exit()
+            self.retries_left -= 1
+            print("No response from server")
+            self.socket.setsockopt(zmq.LINGER, 0)
+            self.socket.close()
+            if self.retries_left == 0:
+                print("Exiting")
+                sys.exit()
 
-        socket = context.socket(zmq.REQ)
-        socket.connect(SERVER_ENDPOINT)
-        socket.send_string(message)
+            self.socket = self.context.socket(zmq.REQ)
+            self.socket.connect(SERVER_ENDPOINT)
+            self.socket.send_string(message)
+
+def main():
+    publisher = BrokerPublisher()
+    for i in range(10):
+        print("Sending " + str(i))
+        message = "Message" + str(i)
+        publisher.publish(str(i), message)
+
+if __name__ == '__main__':
+    main()

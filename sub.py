@@ -83,19 +83,19 @@ def main():
                 args.pop(sys.argv.index("-p")-1)
 
     #User Input
-    welcome_msg = "Welcome to the Vanderbilt Random Weather Data Service."
+    '''welcome_msg = "Welcome to the Vanderbilt Random Weather Data Service."
     print("*" * len(welcome_msg))
     print(welcome_msg)
-    print("*" * len(welcome_msg))
+    print("*" * len(welcome_msg))'''
 
     # determine data of interest
-    zipcode = input("What zipcode? > ")
+    zipcode = '30319' #input("What zipcode? > ")
 
     # create subscriber with interest as topic
-    sub = subscriber.NoBrokerSubscriber(port=USE_PORT)
+    sub = subscriber.FloodSubscriber()
 
     # variable for local application function
-    iterations = int(input("How many iterations? > "))
+    iterations = 3 #int(input("How many iterations? > "))
 
     # weather logic
     # pass in the update function - lambda so that parameter can be passed to sub notify each time
@@ -103,7 +103,7 @@ def main():
     avg = average_weather(iterations, lambda: parse_weather(sub.notify(zipcode)))
 
     print()
-    print("*" * len(welcome_msg))
+    #print("*" * len(welcome_msg))
 
     print("Average temperature " 
             "over {iterations} iterations " 
@@ -113,7 +113,7 @@ def main():
           .format(iterations=iterations, zipcode=zipcode,
                   temperature=avg.temperature, humidity=avg.humidity))
 
-    print("*" * len(welcome_msg))
+    #print("*" * len(welcome_msg))
     print()
 
 

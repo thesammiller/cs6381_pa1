@@ -19,16 +19,13 @@
 import zmq
 
 
-class NoBrokerPublisher:
+class FloodPublisher:
 
-    def __init__(self, port=None):
+    def __init__(self):
         print("Current libzmq version is %s" % zmq.zmq_version())
         print("Current  pyzmq version is %s" % zmq.__version__)
         
-        if port is None:
-            self.port = 5556
-        else:
-            self.port = port
+        self.port = 5556
 
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
