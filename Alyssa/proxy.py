@@ -19,16 +19,10 @@ import zmq
 from random import randrange
 from messageAPI import Proxy
 
-print ("ZMQ version = {}, PyZMQ version = {}".format (zmq.zmq_version (), zmq.pyzmq_version ()))
-       
-# Get the context   
-# context = zmq.Context()
-p = Proxy()
-# This is a proxy. We create the XSUB and XPUB endpoints
-xsub = p.create_XSub()
-xpub = p.create_XPub()
+#print ("ZMQ version = {}, PyZMQ version = {}".format (zmq.zmq_version (), zmq.pyzmq_version ()))
+    
 
-# Now we are going to create a poller)
+p = Proxy()
 p.run()
 
 

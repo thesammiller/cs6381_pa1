@@ -30,7 +30,7 @@ pub.register_pub("90210", proxy_address)
 # This is one of many potential publishers, and we are going
 # to send our publications to a proxy. So we use connect
 #socket = context.socket(zmq.PUB)
-print ("Publisher connecting to proxy at: {}".format(proxy_address))
+#print ("Publisher connecting to proxy at: {}".format(proxy_address))
 #socket.connect(connect_str)
 
 # keep publishing 
@@ -39,6 +39,6 @@ while True:
     temperature = randrange(-80, 135)
     relhumidity = randrange(10, 60)
 
-    print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
+    print ("Application sending: %i %i %i" % (zipcode, temperature, relhumidity))
     pub.publish(str(zipcode), "{} {}".format(temperature, relhumidity))
     time.sleep(1)

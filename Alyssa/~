@@ -10,12 +10,13 @@ from collections import defaultdict
 class Proxy:
     def __init__(self):
         self.context = zmq.Context()
+        #self.topic_publishers = defaultdict(list)
+        #self.topic_subscribers = defaultdict(list)
+        self.xsubsocket = None
+        self.xpubsocket = None
         self.poller = zmq.Poller()
-        self.xsubsocket = self.create_XSub()
-        self.xpubsocket = self.create_XPub()
-        
-         
-    def gaet_context(self): 
+
+    def get_context(self): 
         return self.context 
 
     def create_XSub(self):
@@ -62,7 +63,7 @@ class Proxy:
         # to all my publishers else they will never send anything
         # to us given that we are a XSUB/XPUB entity
         if self.xpubsocket in self.events:
-            msg = self.xpubsocket.recv_string()
+            msg = self.xpubsocket.recv_multipart()
             print("Subscription = {}".format(msg))
             # send the subscription info to publishers
             self.xsubsocket.send_string(msg)
@@ -108,8 +109,9 @@ class Publisher:
             temperature = randrange(-80, 135)
             relhumidity = randrange(10, 60)
         '''
-        print ("Message API Sending: {} {}".format(topic, value))
-        self.socket.send_string("{topic} {value}".format(topic=topic, value=value))
+        #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
+        if(self.socket != None):
+            self.socket.send_string("{topic} {value}".format(topic=topic, value=value))
 
 
 class Subscriber:
@@ -150,4 +152,4 @@ class Subscriber:
                 zipcode, temperature, relhumidity = string.split(" ")
                 total_temp += int(temperature)
 
-        print("Average temperature for zipcode '%s' was %dF" % (zipcode, total_temp / (update_nbr+1)))
+        print("Average temperature for zipcode '%s' was %dF" % (topic_filter, total_temp / (update_nbr+1)))
