@@ -4,63 +4,88 @@ import time
 
 import zmq
 from random import randrange
+from Collections import defaultdict
 
 
-def get_context():
-    context = zmq.Context()
-    return context 
+class Proxy:
+    def __init__(self):
+        self.context = zmq.Context()
+        self.topic_publishers = defaultdict(list)
+        self.topic_subscribers = defaultdict(list)
 
+    def get_context(self): 
+        return self.context 
 
+    def notify(self, topic, value):
+        pass
 
-def register_pub(topic = <someString>, pubId = connect_str):
-    # This is one of many potential publishers, and we are going
-    # to send our publications to a proxy. So we use connect
-    socket = get_context().socket(zmq.PUB)
-    print ("Publisher connecting to proxy at: {}".format(connect_str))
-    socket.connect(pubId)
+        #what to do with topic in register_pub?
+        #I think we store the topic into a dictionary with the IP.
+        #defaultdict is a Python collection that has an empty list
+        #it avoids some exception handling/checking if key is there
 
-    #what to do with topic here?
+class Publisher:
 
+    def __init__(self, proxy):
+        self.context = proxy.get_context()
+        self.socket = None
 
+    def register_pub(self, topic, pubId):
+        self.socket = get_context().socket(zmq.PUB)
+        print("Publisher connecting to proxy at: {}".format(pubId))
+        self.socket.connect(pubId)
+        self.topic_publishers[topic].append(pubId)
 
-def publish(topic = <string>, value = <val>):
-    #what to do with topic and val here?
-    # keep publishing 
-    while True:
-        zipcode = randrange(1, 100000)
-        temperature = randrange(-80, 135)
-        relhumidity = randrange(10, 60)
+    def publish(self, topic, value):
+        #what to do with topic and val here?
+        #I think that the topic for the below is zipcode
+        # the value is temperature and humidity
+        # so this should just take topic and value and then send them
+        #to the broker
+        # I think the while True loop would be in the App logic
+        # something might publish constantly, but something else 
+        # might only publish once or twice
 
+        # keep publishing 
+        '''
+        while True:
+            zipcode = randrange(1, 100000)
+            temperature = randrange(-80, 135)
+            relhumidity = randrange(10, 60)
+        '''
         #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
-        socket.send_multipart("%i %i %i" % (zipcode, temperature, relhumidity))
+        self.socket.send_multipart("{topic} {value}".format(topic, value)
 
 
-def register_sub(topic_filter = <someString>, subId):
-    # Since we are the subscriber, we use the SUB type of the socket
-    socket = get_context().socket(zmq.SUB)
+class Subscriber:
 
-    # Here we assume publisher runs locally unless we
-    # send a command line arg like 10.0.0.2
-    print("Collecting updates from weather server proxy at: {}".format(subId))
-    socket.connect(subId)
+    def __init__(self, proxy):
+        self.context = proxy.get_context()
 
-    # Python 2 - ascii bytes to unicode str
-    if isinstance(topic_filter, bytes):
-        topic_filter = topic_filter.decode('ascii')
+    def register_sub(self, topic_filter, subId):
+        # Since we are the subscriber, we use the SUB type of the socket
+        self.socket = self.get_context().socket(zmq.SUB)
 
-    # any subscriber must use the SUBSCRIBE to set a subscription, i.e., tell the
-    # system what it is interested in
-    socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
-    process_msg() #will print the info
+        # Here we assume publisher runs locally unless we
+        # send a command line arg like 10.0.0.2
+        print("Collecting updates from weather server proxy at: {}".format(subId))
+        self.socket.connect(subId)
 
+        # Python 2 - ascii bytes to unicode str
+        # We won't be using Python2 - default is Python3 on Ubuntu 20.20
+        '''
+        if isinstance(topic_filter, bytes):
+            topic_filter = topic_filter.decode('ascii')
+        '''
+        
+        # any subscriber must use the SUBSCRIBE to set a subscription, i.e., tell the
+        # system what it is interested in
+        socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
+        process_msg() #will print the info
 
-
-
-
-
-# broker uses to communicate to sub
-def notify(topic_filter = <string>, value = <val>)):
-    
+    # broker (proxy) uses to communicate to sub
+    def notify(topic_filter, value):
+        pass 
 
 #how to process and print message in sub
 def process_msg():

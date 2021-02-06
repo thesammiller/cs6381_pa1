@@ -17,6 +17,7 @@ import time
 
 import zmq
 from random import randrange
+from messageAPI import Proxy
 
 print ("ZMQ version = {}, PyZMQ version = {}".format (zmq.zmq_version (), zmq.pyzmq_version ()))
        
@@ -38,5 +39,5 @@ while True:
         sendSubData()
         
     except:
-        print "Exception thrown: ", sys.exc_info()[0]
+        print("Exception thrown: ", sys.exc_info()[0])
 
