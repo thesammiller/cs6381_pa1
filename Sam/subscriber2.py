@@ -41,6 +41,9 @@ socket.bind ("tcp://*:5556")
 # since we are a server, we service incoming clients forever
 while True:
     #  Wait for next request from client
+    #########################################
+    # HOW DO WE REGISTER THIS SUBSCRIBER???
+    ##########################################
     message = socket.recv_string()
     print("Received request: %s" % message)
     socket.send_string(message)
