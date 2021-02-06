@@ -4,7 +4,7 @@ import time
 
 import zmq
 from random import randrange
-from Collections import defaultdict
+from collections import defaultdict
 
 
 class Proxy:
@@ -20,29 +20,29 @@ class Proxy:
         return self.context 
 
     def create_XSub(self):
-        self.xsubsocket = get_context.socket(zmq.XSUB)
+        self.xsubsocket = self.context.socket(zmq.XSUB)
         self.xsubsocket.bind("tcp://*:5555")
-        self.register_poll(xsubsocket)
+        self.register_poller(self.xsubsocket)
         return self.xsubsocket
 
     def create_XPub(self):
-        self.xpubsocket = get_context.socket (zmq.XPUB)
+        self.xpubsocket = self.context.socket (zmq.XPUB)
         self.xpubsocket.setsockopt(zmq.XPUB_VERBOSE, 1)
         self.xpubsocket.bind ("tcp://*:5556")
-        self.register_poller(xpubsocket)
+        self.register_poller(self.xpubsocket)
         return self.xpubsocket
 
     # unsure of parameters
-    def register_poller(entity_id):
+    def register_poller(self, entity_id):
         self.poller.register(entity_id, zmq.POLLIN)
         return self.poller
 
-    def poll():
+    def poll(self):
         print ("Poll with a timeout of 1 sec")
         self.events = dict (poller.poll (1000))
         print ("Events received = {}".format (events))
-        getPubData()
-        getSubData()
+        self.getPubData()
+        self.getSubData()
 
     def getPubData(self):
         # Is there any data from publisher? Note that the proxy
@@ -51,10 +51,10 @@ class Proxy:
         # versions is doing filtering on the publisher side. Thus,
         # not all data from publishers will even show up on proxy.
         if self.xsubsocket in self.events:
-            msg = self.xsubsocket.recv_multipart()
+            msg = self.xsubsocket.recv_string()
             print ("Publication = {}".format (msg))
             # send the message to subscribers
-            self.xpubsocket.send_multipart (msg)
+            self.xpubsocket.send_string(msg)
 
 
     def getSubData(self):
@@ -66,7 +66,7 @@ class Proxy:
             msg = xpubsocket.recv_multipart()
             print("Subscription = {}".format(msg))
             # send the subscription info to publishers
-            xsubsocket.send_multipart(msg)
+            xsubsocket.send_string(msg)
 
     def run(self):
         while True:
@@ -82,15 +82,15 @@ class Proxy:
 
 class Publisher:
 
-    def __init__(self, proxy):
-        self.context = proxy.get_context()
+    def __init__(self):
+        self.context = zmq.Context()
         self.socket = None
 
     def register_pub(self, topic, pubId):
-        self.socket = get_context().socket(zmq.PUB)
+        self.socket = self.context.socket(zmq.PUB)
         print("Publisher connecting to proxy at: {}".format(pubId))
         self.socket.connect(pubId)
-        self.topic_publishers[topic].append(pubId)
+        
 
     def publish(self, topic, value):
         #what to do with topic and val here?
@@ -110,17 +110,18 @@ class Publisher:
             relhumidity = randrange(10, 60)
         '''
         #print ("Sending: %i %i %i" % (zipcode, temperature, relhumidity))
-        self.socket.send_multipart("{topic} {value}".format(topic, value)
+        if(self.socket != None):
+            self.socket.send_string("{topic} {value}".format(topic=topic, value=value))
 
 
 class Subscriber:
 
-    def __init__(self, proxy):
-        self.context = proxy.get_context()
+    def __init__(self):
+        self.context = zmq.Context()
 
     def register_sub(self, topic_filter, subId):
         # Since we are the subscriber, we use the SUB type of the socket
-        self.socket = self.get_context().socket(zmq.SUB)
+        self.socket = self.context.socket(zmq.SUB)
 
         # Here we assume publisher runs locally unless we
         # send a command line arg like 10.0.0.2
@@ -136,21 +137,19 @@ class Subscriber:
         
         # any subscriber must use the SUBSCRIBE to set a subscription, i.e., tell the
         # system what it is interested in
-        socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
-        process_msg() #will print the info
+    
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
 
-    # broker (proxy) uses to communicate to sub
-    def notify(topic_filter, value):
-        pass 
+
+
 
     #how to process and print message in sub
-    def process_msg():
+    def process_msg(self):
                                    # Process 5 updates
         total_temp = 0
         for update_nbr in range(5):
-                string = self.socket.recv_multipart()
+                string = self.socket.recv_string()
                 zipcode, temperature, relhumidity = string.split(" ")
                 total_temp += int(temperature)
 
-        print("Average temperature for zipcode '%s' was %dF" % (
-            topic_filter, total_temp / (update_nbr+1))
+        print("Average temperature for zipcode '%s' was %dF" % (topic_filter, total_temp / (update_nbr+1)))

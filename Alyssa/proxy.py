@@ -23,21 +23,21 @@ print ("ZMQ version = {}, PyZMQ version = {}".format (zmq.zmq_version (), zmq.py
        
 # Get the context   
 # context = zmq.Context()
-
+p = Proxy()
 # This is a proxy. We create the XSUB and XPUB endpoints
-xsub = create_XSub()
-xpub = create_XPub()
+xsub = p.create_XSub()
+xpub = p.create_XPub()
 
-# Now we are going to create a poller
-poller = create_poller(xsub, xpub)
+# Now we are going to create a poller)
+p.run()
 
-while True:
-    try:
+
+
         
-        poll()
-        getPubData()
-        sendSubData()
-        
-    except:
-        print("Exception thrown: ", sys.exc_info()[0])
+
+
+
+       
+
+
 
