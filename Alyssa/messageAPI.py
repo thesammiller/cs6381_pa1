@@ -71,7 +71,7 @@ class Proxy:
         while True:
             try:
                 self.poll()
-            except:
+            except (NameError):
                 print("Exception thrown: {}".format(sys.exc_info()[1]))
 
         #what to do with topic in register_pub?
