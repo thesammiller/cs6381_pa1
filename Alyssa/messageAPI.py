@@ -15,7 +15,7 @@ class Proxy:
         self.xpubsocket = self.create_XPub()
         
          
-    def gaet_context(self): 
+    def get_context(self): 
         return self.context 
 
     def create_XSub(self):
