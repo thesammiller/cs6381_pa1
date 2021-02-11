@@ -23,8 +23,9 @@ from messageAPI import Proxy, Publisher
 
 pub = Publisher()
 
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+srv_addr = sys.argv[1] if len(sys.argv) > 1 else "10.0.0.1"
 proxy_address = "tcp://" + srv_addr + ":5555"
+
 
 pub.register_pub("90210", proxy_address)
 # This is one of many potential publishers, and we are going

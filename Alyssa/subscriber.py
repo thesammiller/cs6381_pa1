@@ -12,11 +12,12 @@ from messageAPI import Subscriber
 sub = Subscriber()
 
 # Determine SubId
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+srv_addr = sys.argv[1] if len(sys.argv) > 1 else "10.0.0.1"
 connect_str = "tcp://" + srv_addr + ":5556"
 
+
 # Determine Sub's interested topic
-topic_filter = sys.argv[2] if len(sys.argv) > 2 else "10001"
+topic_filter = sys.argv[2] if len(sys.argv) > 2 else "90210"
 
 #register sub to the broker
 sub.register_sub(topic_filter, connect_str)
