@@ -115,10 +115,11 @@ class Publisher:
 
 class Subscriber:
 
-    def __init__(self):
+    def __init__(self, topic):
         self.context = zmq.Context()
+        self.topic = topic
 
-    def register_sub(self, topic_filter, subId):
+    def register_sub(self, subId):
         # Since we are the subscriber, we use the SUB type of the socket
         self.socket = self.context.socket(zmq.SUB)
 
@@ -137,14 +138,16 @@ class Subscriber:
         # any subscriber must use the SUBSCRIBE to set a subscription, i.e., tell the
         # system what it is interested in
     
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, self.topic)
 
 
 
 
     #how to process and print message in sub
     def process_msg(self):
-                                   # Process 5 updates
+        return self.socket.recv_string()
+        
+        '''                           # Process 5 updates
         total_temp = 0
         for update_nbr in range(5):
                 string = self.socket.recv_string()
@@ -152,3 +155,4 @@ class Subscriber:
                 total_temp += int(temperature)
 
         print("Average temperature for zipcode '%s' was %dF" % (zipcode, total_temp / (update_nbr+1)))
+        '''
