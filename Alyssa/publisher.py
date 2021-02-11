@@ -21,25 +21,35 @@ from random import randrange
 from messageAPI import Proxy, Publisher
 
 
-pub = Publisher()
-
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "10.0.0.1"
-proxy_address = "tcp://" + srv_addr + ":5555"
+srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
+topic = sys.argv[2] if len(sys.argv) > 2 else "90210"
 
 
-pub.register_pub("90210", proxy_address)
-# This is one of many potential publishers, and we are going
-# to send our publications to a proxy. So we use connect
-#socket = context.socket(zmq.PUB)
-#print ("Publisher connecting to proxy at: {}".format(proxy_address))
-#socket.connect(connect_str)
+class WeatherPublisher:
 
-# keep publishing 
-while True:
-    zipcode = 90210 #randrange(1, 100000)
-    temperature = randrange(-80, 135)
-    relhumidity = randrange(10, 60)
+    def __init__(self, topic, srv_addr):
+        self.topic = topic
+        self.proxy_address = "tcp://" + srv_addr + ":5555"
+        self.pub = Publisher(self.topic)
+        self.pub.register_pub(self.proxy_address)
 
-    print ("Application sending: %i %i %i" % (zipcode, temperature, relhumidity))
-    pub.publish(str(zipcode), "{} {}".format(temperature, relhumidity))
-    time.sleep(1)
+        
+    def generateWeather(self):
+        temperature = randrange(-80, 135)
+        relhumidity = randrange(10, 60)
+        return "{} {}".format(temperature, relhumidity)
+        
+        
+    def weatherPublish(self):
+        data = self.generateWeather()
+        self.pub.publish("{data}".format(data=data))
+        print ("Application sending: {topic} {data}".format(topic=self.topic, data=data))
+
+
+def main():
+    wp = WeatherPublisher(topic, srv_addr)
+    while True:
+        wp.weatherPublish()
+        time.sleep(1)
+
+main()

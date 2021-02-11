@@ -81,17 +81,18 @@ class Proxy:
 
 class Publisher:
 
-    def __init__(self):
+    def __init__(self, topic):
         self.context = zmq.Context()
         self.socket = None
+        self.topic = topic
 
-    def register_pub(self, topic, pubId):
+    def register_pub(self, pubId):
         self.socket = self.context.socket(zmq.PUB)
         print("Publisher connecting to proxy at: {}".format(pubId))
         self.socket.connect(pubId)
         
 
-    def publish(self, topic, value):
+    def publish(self, value):
         #what to do with topic and val here?
         #I think that the topic for the below is zipcode
         # the value is temperature and humidity
@@ -108,8 +109,8 @@ class Publisher:
             temperature = randrange(-80, 135)
             relhumidity = randrange(10, 60)
         '''
-        print ("Message API Sending: {} {}".format(topic, value))
-        self.socket.send_string("{topic} {value}".format(topic=topic, value=value))
+        #print ("Message API Sending: {} {}".format(self.topic, value))
+        self.socket.send_string("{topic} {value}".format(topic=self.topic, value=value))
 
 
 class Subscriber:

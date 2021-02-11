@@ -12,7 +12,7 @@ from messageAPI import Subscriber
 sub = Subscriber()
 
 # Determine SubId
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "10.0.0.1"
+srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 connect_str = "tcp://" + srv_addr + ":5556"
 
 
