@@ -1,6 +1,8 @@
 import os
 import sys
 import time
+import datetime
+
 
 import zmq
 from random import randrange
@@ -110,7 +112,10 @@ class Publisher:
             relhumidity = randrange(10, 60)
         '''
         #print ("Message API Sending: {} {}".format(self.topic, value))
-        self.socket.send_string("{topic} {value}".format(topic=self.topic, value=value))
+        seconds = (datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds()
+        #print(seconds)
+        time = seconds
+        self.socket.send_string("{topic} {time} {value}".format(topic=self.topic, time=time, value=value))
 
 
 class Subscriber:
@@ -145,7 +150,16 @@ class Subscriber:
 
     #how to process and print message in sub
     def process_msg(self):
-        return self.socket.recv_string()
+        message = self.socket.recv_string()
+        topic, time, *values = message.split()
+        #epoch
+        seconds = (datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds()
+        difference = seconds - float(time)
+
+        with open("secondsfile.txt", "a") as f:
+            f.write(str(difference) + "\n")
+        
+        return " ".join(values)
         
         '''                           # Process 5 updates
         total_temp = 0

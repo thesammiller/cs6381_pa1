@@ -9,6 +9,7 @@
 import sys
 from messageAPI import Subscriber
 
+
 srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
 topic_filter = sys.argv[2] if len(sys.argv) > 2 else "90210"
 
@@ -25,10 +26,12 @@ class WeatherSubscriber:
         total_temp = 0
         for update_nbr in range(5):
             string = self.sub.process_msg()
-            zipcode, temperature, relhumidity = string.split(" ")
+            temperature, relhumidity = string.split(" ")
             total_temp += int(temperature)
+            
+            
 
-        print("Average temperature for zipcode '%s' was %dF" % (zipcode, total_temp / (update_nbr+1)))
+        print("Average temperature for zipcode '%s' was %dF" % (self.topic, total_temp / (update_nbr+1)))
 
 def main():
     ws = WeatherSubscriber(topic_filter, srv_addr)
