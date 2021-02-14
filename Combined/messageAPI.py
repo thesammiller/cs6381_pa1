@@ -6,10 +6,12 @@ import zmq
 from random import randrange
 from collections import defaultdict
 
+import util
+
 PROXY_SERVER_ADDRESS_PUB = "tcp://10.0.0.1:5555"
 PROXY_SERVER_ADDRESS_SUB = "tcp://10.0.0.1:5556"
 
-BABY_PROXY_SERVER_ADDRESS = "10.0.0.2:5555"
+BABY_PROXY_SERVER_ADDRESS = "tcp://10.0.0.2:5555"
 
 BABY_PROXY_NO_PUBLISHERS = "NO_PUBLISHERS"
 
@@ -23,7 +25,7 @@ class BabyProxy:
     def __init__(self):
         self.context = zmq.Context ()   # returns a singleton object
         self.incoming_socket = self.context.socket (zmq.REP)
-        self.incoming_socket.bind ("tcp://*:5555}")
+        self.incoming_socket.bind ("tcp://*:5555")
         self.publisher = defaultdict(list)
 
     #Application interface --> run() encloses basic functionality
@@ -48,15 +50,16 @@ class BabyProxy:
             for t in topics.split():
                 print("Adding {address} to topic {topic}".format(address=address, topic=topic))
                 self.publisher[topic].append(address)
-            self.incoming_socket.send_string("ok")
+            util.lazy_pirate(self.incoming_socket, "ok")
 
         #If a subscriber shows up, return the values of the topic dictionary
         if role == "sub":
+            print("Registering sub")
             returnmsg = ""
             for addr in self.publishers[topic]:
                 returnmsg += addr + " "
             returnmsg = returnmsg if returnmsg != "" else BABY_PROXY_NO_PUBLISHERS
-            self.incoming_socket.send_string(self.returnmsg)
+            util.lazy_pirate(self.incoming_socket, self.returnmsg)
 
         return
 
@@ -186,22 +189,24 @@ class Subscriber:
 
 
 class FloodSubscriber:
-    def __init__(self):
+    def __init__(self, topic):
         self.context = zmq.Context()
+        self.topic = topic
         self.socket = None
         self.role = "sub"
-        self.address = "10.0.0.3" #need to figure out how to get this dynamically
+        self.address = list(util.local_ip4_addr_list())[0]
         self.publishers = []
+        print("Using IP address {}".format(self.address))
 
-    def register_sub(self, topic):
+    def register_sub(self):
         self.socket = self.context.socket(zmq.REQ)
-        self.socket.connect("tcp://" + BABY_PROXY_SERVER_ADDRESS)
+        self.socket.connect(BABY_PROXY_SERVER_ADDRESS)
         #assuming topic is a string of topics listed as spaces
 
-        self.socket.send_string("{role} {address} {topic}".format(role=self.role,
-                                                                  address=self.address,
-                                                                  topic=self.topic))
-        self.message = self.socket.recv_string()
+        send_message = "{role} {address} {topic}".format(role=self.role, address=self.address, topic=self.topic)
+        recv_message = util.lazy_pirate(self.socket, send_message)
+        
+        self.message = recv_message
         print(self.message)
         if self.message != BABY_PROXY_NO_PUBLISHERS:
             for addr in self.message.split():

@@ -1,6 +1,6 @@
 from messageAPI import FloodSubscriber
 
 
-fs = FloodSubscriber()
-fs.register_sub("90210")
+fs = FloodSubscriber("90210")
+fs.register_sub()
 fs.notify()
