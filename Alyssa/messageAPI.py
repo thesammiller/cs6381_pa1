@@ -302,7 +302,7 @@ class FloodSubscriber:
         difference = seconds - float(time)
         with open("seconds_{}.txt".format(self.ipaddress), "a") as f:
             f.write(str(difference) + "\n")
-        print("received data {data}".format(data=self.values))
+        print("received data {data}".format(data=" ".join(values)))
         self.socket.send_string(self.message)
         return " ".join(values)
 
