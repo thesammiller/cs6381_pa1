@@ -1,44 +1,25 @@
-# Sample code for CS6381
-# Vanderbilt University
-# Instructor: Aniruddha Gokhale
-#
-# Code based on basic pub/sub but modified for xsub and xpub
-#
-# We are executing these samples on a Mininet-emulated environment
-#
-#
 
-#
-#   Weather update server
-#   Publishes random weather updates
-#  Connects to a xsub on port 5555
-#
 
 import sys
 import time
 import zmq
 from random import randrange
-from messageAPI import Proxy, Publisher
+from messageAPI import BrokerPublisher, FloodPublisher
 
-
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-topic = sys.argv[2] if len(sys.argv) > 2 else "90210"
-
+system = {"BROKER": BrokerPublisher,
+           "FLOOD" : FloodPublisher}
 
 class WeatherPublisher:
 
-    def __init__(self, topic, srv_addr):
+    def __init__(self, topic, broker):
         self.topic = topic
-        self.proxy_address = "tcp://" + srv_addr + ":5555"
-        self.pub = Publisher(self.topic)
-        self.pub.register_pub(self.proxy_address)
-
+        self.pub = system[broker](self.topic)
+        self.pub.register_pub()
         
     def generateWeather(self):
         temperature = randrange(-80, 135)
         relhumidity = randrange(10, 60)
         return "{} {}".format(temperature, relhumidity)
-        
         
     def weatherPublish(self):
         data = self.generateWeather()
@@ -47,9 +28,22 @@ class WeatherPublisher:
 
 
 def main():
-    wp = WeatherPublisher(topic, srv_addr)
+
+    topic = sys.argv[1] if len(sys.argv) > 1 else "90210"
+    api = sys.argv[2] if len(sys.argv) > 2 else "BROKER"
+    
+    if api not in system.keys():
+        print("Usage error -- message api can either be FLOOD or BROKER")
+        sys.exit(-1)
+
+    if not topic.isdigit() or len(topic) != 5:
+        print("Usage error -- topic must be 5 digit zipcode.")
+        sys.exit(-1)
+        
+    wp = WeatherPublisher(topic, api)
     while True:
         wp.weatherPublish()
         time.sleep(1)
 
-main()
+if __name__ == "__main__":
+    main()

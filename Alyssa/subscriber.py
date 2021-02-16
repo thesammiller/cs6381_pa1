@@ -1,44 +1,46 @@
-# Sample code for CS6381
-
-#
-#   Weather update client
-#   Connects SUB socket to tcp://localhost:5556
-#   Collects weather updates and finds avg temp in zipcode
-#
-
 import sys
-from messageAPI import Subscriber
+from messageAPI import BrokerSubscriber, FloodSubscriber
 
-
-srv_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost"
-topic_filter = sys.argv[2] if len(sys.argv) > 2 else "90210"
+system = {"FLOOD": FloodSubscriber,
+          "BROKER": BrokerSubscriber}
 
 class WeatherSubscriber:
 
-    def __init__(self, topic, srv_addry):
-        self.sub = Subscriber(topic)
-        self.connect_str = "tcp://" + srv_addr + ":5556"
+    def __init__(self, topic, api):
+        self.sub = system[api](topic)
         self.topic = topic
-        self.sub.register_sub(self.connect_str)
-
+        self.sub.register_sub()
 
     def run(self):
+        print("Running subscriber application...")
         total_temp = 0
         for update_nbr in range(5):
-            string = self.sub.process_msg()
+            string = self.sub.notify()
+            print("Suscriber Application got message.")
             temperature, relhumidity = string.split(" ")
             total_temp += int(temperature)
             
-            
-
         print("Average temperature for zipcode '%s' was %dF" % (self.topic, total_temp / (update_nbr+1)))
 
 def main():
-    ws = WeatherSubscriber(topic_filter, srv_addr)
+
+    topic_filter = sys.argv[1] if len(sys.argv) > 1 else "90210"
+    api = sys.argv[2] if len(sys.argv) > 2 else "BROKER"
+    
+    if api not in system:
+        print("Usage error -- message API can either be FLOOD or BROKER")
+        sys.exit(-1)
+    if not topic_filter.isdigit() or len(topic_filter) != 5:
+        print("Usage error -- topic must be a zipcode (all numbers, 5 total).")
+        sys.exit(-1)
+
+        
+    ws = WeatherSubscriber(topic_filter, api)
     while True:
         ws.run()
 
-main()
+if __name__ == "__main__":
+    main()
 
 
 
