@@ -68,7 +68,7 @@ class BrokerProxy:
         return self.poller
 
     def poll(self):
-        print ("Poll with a timeout of 1 sec")
+        #print ("Poll with a timeout of 1 sec")
         self.events = dict (self.poller.poll (1000))
         print ("Events received = {}".format (self.events))
         self.getPubData()
@@ -150,7 +150,7 @@ class BrokerSubscriber:
     #sub gets message
     def notify(self):
         message = self.socket.recv_string()
-        print("Message received")
+        #print("Message received")
         topic, time, *values = message.split()
         #epoch
         seconds = (datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds()
@@ -173,7 +173,7 @@ class BrokerSubscriber:
 
 class FloodProxy:
     def __init__(self):
-        print("initializing baby broker API")
+        #print("initializing baby broker API")
         self.context = zmq.Context ()   # returns a singleton object
         self.incoming_socket = self.context.socket(zmq.REP)
         #creating a server bound to port 5555
@@ -185,7 +185,7 @@ class FloodProxy:
     #Application interface --> run() encloses basic functionality
     def run(self):
         while True:
-            print("Listening...")
+            #print("Listening...")
             self.listen()
 
     def listen(self):
@@ -240,7 +240,7 @@ class FloodPublisher:
         
 
     def register_pub(self):
-        print("Registering publisher")
+        #print("Registering publisher")
         self.hello_message = "{role} {topic} {ipaddr}".format(role=self.role, topic=self.topic, ipaddr=self.ipaddress)
         self.socket.send_string(self.hello_message)
         self.reply = self.socket.recv_string()
@@ -280,7 +280,7 @@ class FloodSubscriber:
         
 
     def register_sub(self):
-        print("Registering Baby Subscriber API")
+        #print("Registering Baby Subscriber API")
         self.hello_socket = self.context.socket(zmq.REQ)
         self.connect_str = SERVER_ENDPOINT.format(address=FLOOD_PROXY_ADDRESS, port=FLOOD_PROXY_PORT)
         self.hello_socket.connect(self.connect_str)
@@ -294,7 +294,7 @@ class FloodSubscriber:
         self.reply = self.hello_socket.recv_string()
             
     def notify(self):
-        print("Baby Subscriber API listening.")
+        #print("Baby Subscriber API listening.")
         #  Wait for next request from client
         self.message = self.socket.recv_string()
         seconds = (datetime.datetime.now() - datetime.datetime(1970,1,1)).total_seconds()
@@ -302,7 +302,7 @@ class FloodSubscriber:
         difference = seconds - float(time)
         with open("seconds_{}.txt".format(self.ipaddress), "a") as f:
             f.write(str(difference) + "\n")
-        print("received data {data}".format(data=" ".join(values)))
+        print("Subscriber received data {data}".format(data=" ".join(values)))
         self.socket.send_string(self.message)
         return " ".join(values)
 

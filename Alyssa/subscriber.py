@@ -16,7 +16,7 @@ class WeatherSubscriber:
         total_temp = 0
         for update_nbr in range(5):
             string = self.sub.notify()
-            print("Suscriber Application got message.")
+            #print("Suscriber Application got message.")
             temperature, relhumidity = string.split(" ")
             total_temp += int(temperature)
             
