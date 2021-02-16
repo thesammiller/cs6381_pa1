@@ -1,8 +1,0 @@
-from pubsub import babybroker
-
-def main():
-    b = babybroker.BabyBroker()
-    b.run()
-
-if __name__ == '__main__':
-    main()
