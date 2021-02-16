@@ -30,6 +30,7 @@ SERVER_ENDPOINT = "tcp://{}"
 
 BABY_BROKER_ADDRESS = "10.0.0.2:5555"
 #BABY_BROKER_ADDRESS = "localhost:5555"
+
 class BabyPublisher:
 
     def __init__(self, topic):
@@ -38,7 +39,9 @@ class BabyPublisher:
         self.request_retries = REQUEST_RETRIES
         self.connect_str = SERVER_ENDPOINT.format(BABY_BROKER_ADDRESS)
         self.socket.connect(self.connect_str)
-        self.ipaddress = list(ipaddr.local_ip4_addr_list())[0]
+        addresses = list(ipaddr.local_ip4_addr_list()) 
+        self.ipaddress = [ip for ip in addresses if ip.startswith("10.")][0]
+        #print(self.ipaddress)
         self.role = "PUB"
         self.topic = topic
         self.registry = []
@@ -48,7 +51,9 @@ class BabyPublisher:
     def register_pub(self):
         print("Registering publisher")
         self.hello_message = "{role} {topic} {ipaddr}".format(role=self.role, topic=self.topic, ipaddr=self.ipaddress)
-        self.reply = self.publish_lazy(self.hello_message)
+        self.socket.send_string(self.hello_message)
+        self.reply = self.socket.recv_string()
+        #self.reply = self.publish_lazy(self.hello_message)
         if self.reply != "none":
             self.registry = self.reply.split()
             print("Received registry.")
@@ -59,13 +64,10 @@ class BabyPublisher:
             self.socket = self.context.socket(zmq.REQ)
             self.connect_str = SERVER_ENDPOINT.format(ipaddr)
             self.socket.connect(self.connect_str)
-            self.message = "{topic} {data}".format(topic=self.topic, data=data)
-            reply = self.publish_lazy(self.message)
-            if reply != "none":
-                continue
-            else:
-                print("Error -> reply not as expected")
-                break
+            self.message = "{data}".format(data=data)
+            self.socket.send_string(self.message)
+            reply = self.socket.recv_string()
+            
                 
 
     # lazy pirate to avoid port issues

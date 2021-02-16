@@ -35,27 +35,25 @@ class BabySubscriber:
         self.hello_request_retries = REQUEST_RETRIES
         self.connect_str = "tcp://" + BABY_BROKER_ADDRESS
         self.hello_socket.connect(self.connect_str)
-        self.ipaddress = list(ipaddr.local_ip4_addr_list())[0] + ":{}".format(SUBSCRIBER_PORT)
+        addresses = list(ipaddr.local_ip4_addr_list())
+        self.ipaddress = [ip for ip in addresses if ip.startswith("10")][0]
+        self.ipaddress += ":{}".format(SUBSCRIBER_PORT)
         self.role = "SUB"
         self.hello_message = "{role} {topic} {ipaddr}".format(role=self.role, topic=self.topic, ipaddr=self.ipaddress)
         print(self.hello_message)
         self.hello_socket.send_string(self.hello_message)
         self.reply = self.hello_socket.recv_string()
-        if self.reply != "none":
-            self.registry = self.reply.split()
-        else:
-            print("no publisher")
+        
     
     def listen(self):
         print("Baby Subscriber API listening.")
         #  Wait for next request from client
         self.message = self.socket.recv_string()
-        topic, *data = self.message.split()
-        print("received data {data}".format(data=data))
+        print("received data {data}".format(data=self.message))
         self.socket.send_string(self.message)
-        return data
-        
-                
+        return self.message
+
+
     # lazy pirate to avoid port issues
     def publish_lazy(self, message):
         self.socket.send_string(message)

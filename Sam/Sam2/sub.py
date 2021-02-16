@@ -28,7 +28,7 @@ import sys
 # return Weather data structure
 def parse_weather(raw_data):
     temperature, humidity = raw_data.split()
-    return weather.Weather(zipcode="90210", temperature=temperature, humidity=humidity)
+    return float(temperature), float(humidity)
 
 
 # local application processes set number of weather updates
@@ -43,11 +43,11 @@ def average_weather(iterations, weather_update):
         print("Getting update #{}...".format(i+1))
 
         # function we pass in as argument will return an updated Weather object
-        w = weather_update()
+        w = parse_weather(weather_update())
 
         # process the data as needed
-        total_temp += w.temperature
-        total_humid += w.humidity
+        total_temp += w[0]
+        total_humid += w[1]
 
 
     # calculate the averages
@@ -55,7 +55,7 @@ def average_weather(iterations, weather_update):
     avg_humidity = total_humid / iterations
 
     # return data in local data structure
-    return weather.Weather(zipcode=zipcode, temperature=avg_temperature, humidity=avg_humidity)
+    return {"temp": avg_temperature, "humidity": avg_humidity}
 
 
 def main():
@@ -64,18 +64,20 @@ def main():
 
     sub = babysubscriber.BabySubscriber(zipcode)
 
-    iterations = 3 #int(input("How many iterations? > "))
+    while True:
 
-    avg = average_weather(iterations, lambda: sub.listen())
+        iterations = 5 #int(input("How many iterations? > "))
+
+        avg = average_weather(iterations, lambda: sub.listen())
 
 
-    print("Average temperature " 
-            "over {iterations} iterations " 
-            "for zipcode {zipcode}:\n" 
-            "\tTemperature:\t{temperature:.2f}F\n" 
-            "\tHumidity:\t{humidity:.2f}%."
+        print("Average temperature " 
+          "over {iterations} iterations " 
+          "for zipcode {zipcode}:\n" 
+          "\tTemperature:\t{temperature:.2f}F\n" 
+          "\tHumidity:\t{humidity:.2f}%."
           .format(iterations=iterations, zipcode=zipcode,
-                  temperature=avg.temperature, humidity=avg.humidity))
+                  temperature=avg["temp"], humidity=avg["humidity"]))
 
 
 if __name__ == '__main__':
